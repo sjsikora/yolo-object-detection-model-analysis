@@ -1,3 +1,4 @@
+experiment_name: Image Quality Increase
 task: detect
 mode: train
 model: yolo11s.pt
