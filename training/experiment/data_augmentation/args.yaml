@@ -6,13 +6,13 @@ data: /content/drive/MyDrive/CMPE401/YOLO/data/visdrone.yaml
 epochs: 50
 time: null
 patience: 50
-batch: 32
+batch: 64
 imgsz: 640
 save: true
 save_period: 10
-cache: false
+cache: ram
 device: '0'
-workers: 4
+workers: 12
 project: /content/drive/MyDrive/CMPE401/YOLO/runs
 name: visdrone_yolo11s_augmentation
 exist_ok: false
@@ -42,6 +42,7 @@ conf: null
 iou: 0.7
 max_det: 300
 half: false
+bf16: true
 dnn: false
 plots: true
 end2end: null
