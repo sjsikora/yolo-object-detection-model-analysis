@@ -1,4 +1,4 @@
-experiment_name: AdamW High Image Size
+experiment_name: AdamW LR0 0.001
 task: detect
 mode: train
 model: yolo11s.pt
@@ -6,15 +6,15 @@ data: /content/drive/MyDrive/CMPE401/YOLO/data/visdrone.yaml
 epochs: 50
 time: null
 patience: 50
-batch: 16
-imgsz: 1280
+batch: 64
+imgsz: 640
 save: true
 save_period: 10
 cache: ram
 device: '0'
 workers: 12
 project: /content/drive/MyDrive/CMPE401/YOLO/runs
-name: visdrone_yolo11s_adamw_imgsize
+name: visdrone_yolo11s_adamw_lr0_001
 exist_ok: false
 pretrained: true
 optimizer: AdamW
@@ -108,4 +108,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_adamw_imgsize
+save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_adamw_lr0_001

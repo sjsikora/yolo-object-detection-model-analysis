@@ -1,11 +1,11 @@
-experiment_name: Improvement Cycle
+experiment_name: AdamW LR0 0.001 High Image Size
 task: detect
 mode: train
 model: yolo11s.pt
 data: /content/drive/MyDrive/CMPE401/YOLO/data/visdrone.yaml
-epochs: 75
+epochs: 50
 time: null
-patience: 75
+patience: 50
 batch: 16
 imgsz: 1280
 save: true
@@ -14,10 +14,10 @@ cache: ram
 device: '0'
 workers: 12
 project: /content/drive/MyDrive/CMPE401/YOLO/runs
-name: visdrone_yolo11s_best_v2
+name: visdrone_yolo11s_adamw_lr0_001_imghigh
 exist_ok: false
 pretrained: true
-optimizer: auto
+optimizer: AdamW
 verbose: true
 seed: 0
 deterministic: true
@@ -42,6 +42,7 @@ conf: null
 iou: 0.7
 max_det: 300
 half: false
+bf16: true
 dnn: false
 plots: true
 end2end: null
@@ -72,7 +73,7 @@ simplify: true
 opset: null
 workspace: null
 nms: false
-lr0: 0.01
+lr0: 0.001
 lrf: 0.01
 momentum: 0.937
 weight_decay: 0.0005
@@ -107,4 +108,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_best_v2
+save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_adamw_lr0_001_imghigh

@@ -1,23 +1,23 @@
-experiment_name: AdamW Optimizer
+experiment_name: Image Size High More Epochs
 task: detect
 mode: train
 model: yolo11s.pt
 data: /content/drive/MyDrive/CMPE401/YOLO/data/visdrone.yaml
-epochs: 50
+epochs: 75
 time: null
-patience: 50
-batch: 64
-imgsz: 640
+patience: 75
+batch: 16
+imgsz: 1280
 save: true
 save_period: 10
 cache: ram
 device: '0'
 workers: 12
 project: /content/drive/MyDrive/CMPE401/YOLO/runs
-name: visdrone_yolo11s_adamw
+name: visdrone_yolo11s_imgsize_high_more_epochs
 exist_ok: false
 pretrained: true
-optimizer: AdamW
+optimizer: auto
 verbose: true
 seed: 0
 deterministic: true
@@ -42,7 +42,6 @@ conf: null
 iou: 0.7
 max_det: 300
 half: false
-bf16: true
 dnn: false
 plots: true
 end2end: null
@@ -73,7 +72,7 @@ simplify: true
 opset: null
 workspace: null
 nms: false
-lr0: 0.001
+lr0: 0.01
 lrf: 0.01
 momentum: 0.937
 weight_decay: 0.0005
@@ -108,4 +107,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_adamw
+save_dir: /content/drive/MyDrive/CMPE401/YOLO/runs/visdrone_yolo11s_imgsize_high_more_epochs
