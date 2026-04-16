@@ -20,6 +20,15 @@ The baseline Yolov11 was trained on VisDrone data. Default parameters were used 
 
 ### Training and Validation Loss
 
+![Baseline Training and Validation Curves](results/baseline/training_val_curves.png)
+
+| Metric | Best Validation | Test Set |
+|---|---|---|
+| mAP@50-95 | 0.2402 | 0.1760 |
+| mAP@50 | 0.4040 | 0.3120 |
+| Precision | 0.5188 | 0.4495 |
+| Recall | 0.3848 | 0.3467 |
+
 Overall, the baseline model exhibited healthy training curves. The training and validation losses are decreased across all 50 epochs. Notably though, after epoch 40, a mild divergence between training and validation in box, class, and DFL loss was observed. This divergence coincided with the removal of mosaic augmentation at epoch 40. With less diverse training data, the model was able to begin memorising specific features of the training images, causing training loss to fall faster than validation loss.
 
 However this did not negatively impact detection performance, as mAP@50 continued to improve through to epoch 48. This suggests that the model, despite the loss divergence, still retained strong task generalization.
@@ -46,6 +55,16 @@ The rationale with this experiment is that the automatically chosen learning rat
 
 #### Results
 
+![AdamW lr=0.001 Training and Validation Curves](results/experiment/adamw_lr0_001/training_val_curves.png)
+
+| Metric | Baseline | AdamW lr=0.001 |
+|---|---|---|
+| mAP@50-95 | 0.1760 | **0.1800** |
+| mAP@50 | 0.3120 | **0.3168** |
+| Precision | **0.4495** | 0.4443 |
+| Recall | 0.3467 | **0.3497** |
+| Inference (ms/img) | 5.538 | **5.215** |
+
 #### Analysis
 
 Despite the higher learning rate, the model trailed the baseline loss. throughout all of the training. At epoch 10, the baseline had already reached a validation mAP50 of 0.341 while the experiment sat at 0.293. This gap persisted through to epoch 50, where the baseline finished at 0.403 versus 0.381. Rather than converging faster or finding a better minimum, the higher learning rate actually appeared to slow and destabilize early learning.
@@ -62,6 +81,16 @@ Mixup blends two images together with a weighted average, encouraging the model 
 
 #### Results
 
+![Data Augmentation Training and Validation Curves](results/experiment/data_augmentation/training_val_curves.png)
+
+| Metric | Baseline | Data Augmentation |
+|---|---|---|
+| mAP@50-95 | 0.1760 | **0.1797** |
+| mAP@50 | 0.3120 | **0.3165** |
+| Precision | 0.4495 | **0.4511** |
+| Recall | 0.3467 | **0.3521** |
+| Inference (ms/img) | 5.538 | **4.430** |
+
 #### Analysis
 
 The data augmentation experiment produced a final mAP50-95 of 0.1803 compared to the baseline's 0.1767. A negligible difference that falls within noise. Despite the added mixup and copy-paste augmentation, the model showed no meaningful improvement in detection performance.
@@ -76,6 +105,16 @@ This experiment only changed the image resolution from 640x640 to 1280x1280. The
 
 #### Results
 
+![High Resolution 1280 Training and Validation Curves](results/experiment/imgsize_high/training_val_curves.png)
+
+| Metric | Baseline | High Resolution (1280) |
+|---|---|---|
+| mAP@50-95 | 0.1760 | **0.2593** |
+| mAP@50 | 0.3120 | **0.4389** |
+| Precision | 0.4495 | **0.5589** |
+| Recall | 0.3467 | **0.4462** |
+| Inference (ms/img) | **5.538** | 5.557 |
+
 #### Analysis
 
 This experiment was the most impactful by far. The model achieved a test mAP@50-95 of 0.2608 and mAP@50 of 0.4396, compared to the baseline's 0.1767 and 0.3122 respectively; there was about a  ~48% improvement in mAP50-95.
@@ -85,6 +124,8 @@ This confirms that this model was simply limited by resolution on this task. The
 The only concern with the training was the mild overfitting that appeared around epoch 20. Across all loss metrics, training loss decreases much more than the validation dataset. However, the "best" model (as defined by highest mAP@50-95 score) occurred at epoch 39 meaning that the final model only had minor overfitting of training data as compared to epoch 50.
 
 ### Experiment Conclusion
+
+![Training Experiments](results/comparison_curves_experiment.png)
 
 The clear front runner in our experiments is increasing the image size. All other experiments had similar or worse results than the baseline.
 
@@ -98,6 +139,16 @@ The baseline model was primarily limited by the image size. Therefore, it may ha
 
 ##### Performance
 
+![Data Augmentation at High Resolution Training and Validation Curves](results/improvement_cycle/data_aug_imghigh/training_val_curves.png)
+
+| Metric | imgsize\_high (baseline) | Data Aug + High Res |
+|---|---|---|
+| mAP@50-95 | **0.2593** | 0.2580 |
+| mAP@50 | **0.4389** | 0.4377 |
+| Precision | **0.5589** | 0.5514 |
+| Recall | 0.4462 | **0.4478** |
+| Inference (ms/img) | **5.557** | 5.635 |
+
 ##### Discussion
 
 At high image resolution, the pattern observed at standard resolution is held. The high image model achieved a best validation mAP@50-95 of 0.3265, lower than the plain high image model's 0.3482, consistent with the same pattern at default image resolution. One possibility is that increasing image resolution already implicitly improves the model's exposure to fine-grained object detail, partially overlapping with what copy-paste and mixup augmentation are trying to achieve. In other words, the higher resolution may already be doing the heavy lifting in terms of feature richness, leaving less room for augmentation to add further signal. Better results may require augmentation parameters specifically tuned to VisDrone's aerial, dense-object characteristics.
@@ -107,6 +158,16 @@ What is notable is that the generalisation benefit of augmentation persisted at 
 #### Specific Optimizer Settings
 
 ##### Performance
+
+![AdamW lr=0.001 at High Resolution Training and Validation Curves](results/improvement_cycle/adamw_lr0_001_imghigh/training_val_curves.png)
+
+| Metric | imgsize\_high (baseline) | AdamW lr=0.001 + High Res |
+|---|---|---|
+| mAP@50-95 | 0.2593 | **0.2596** |
+| mAP@50 | 0.4389 | **0.4414** |
+| Precision | **0.5589** | 0.5554 |
+| Recall | 0.4462 | **0.4572** |
+| Inference (ms/img) | **5.557** | 5.624 |
 
 ##### Discussion
 
@@ -122,6 +183,15 @@ When considering epochs, there is an opportunity to either increase or decrease 
 
 ##### Performance
 
+![Epoch Control Training and Validation Curves](results/improvement_cycle/imgsize_high_more_epochs/training_val_curves.png)
+
+| Metric | imgsize\_high (50 ep) | More Epochs (75 ep) | Fewer Epochs (20 ep) |
+|---|---|---|---|
+| mAP@50-95 | **0.2593** | 0.2538 | 0.2511 |
+| mAP@50 | **0.4389** | 0.4320 | 0.4266 |
+| Precision | **0.5589** | 0.5570 | 0.5379 |
+| Recall | **0.4462** | 0.4437 | 0.4391 |
+| Inference (ms/img) | 5.557 | **5.522** | 5.755 |
 
 ##### Discussion
 
@@ -136,10 +206,22 @@ The baseline model utilizes a linear learning rate decay. This means that the le
 
 ##### Performance
 
+![Cosine Learning Rate Training and Validation Curves](results/improvement_cycle/cosine_lr_imghigh/training_val_curves.png)
+
+| Metric | imgsize\_high (baseline) | Cosine LR |
+|---|---|---|
+| mAP@50-95 | **0.2593** | 0.2550 |
+| mAP@50 | **0.4389** | 0.4324 |
+| Precision | **0.5589** | 0.5490 |
+| Recall | 0.4462 | **0.4465** |
+| Inference (ms/img) | 5.557 | **5.501** |
+
 ##### Discussion
 The cosine learning rate did not improve performance. There are a couple reasons for this behavior. The first reason is that since the YOLO model is already a pre-trained model and linear learning rate serves as its default, this may have already been tested and tuned as the best, and cosine scheduling offered no meaningful advantage. Another option is that as shown in the previous experiments, the model is already hitting a similar performance no matter what parameters are turned. If cosine is good at exploring more possibilities, it may be that there are no other actual possibilities to explore except the valley that we keep ending in.
 
 ##### Conclusion
+
+![Model Comparison](analyze/rankings_experiments.png)
 
 The experiments done support one central claim: the most important factor for YOLO performance on this task is image resolution. Every other hyperparameter had a slight to no effect on the model's performance, and this is most clearly illustrated by the two distinct clusters in the results, standard resolution models (640) grouped around a test mAP@50-95 of 0.176-0.180, while high resolution models (1280) grouped around 0.251-0.260, with the only difference between the clusters being image size.
 
@@ -150,6 +232,17 @@ It is worth noting that despite the gains from higher resolution, even the best 
 ## Versioned Analysis
 
 The baseline model, YOLOv11s, was benchmark with YOLOv9s, YOLOv10s, YOLOv11s. The following figures and tables showcase their results.
+
+![Versioned Comparison](analyze/rankings_versioned.png)
+
+![Versioned Model Comparison](results/comparison_baseline_versioned.png)
+
+| Model | mAP@50-95 | mAP@50 | Precision | Recall | Params (M) | Training Time | Inference (ms/img) |
+|---|---|---|---|---|---|---|---|
+| YOLOv8s | 0.1737 | 0.3064 | **0.4513** | 0.3360 | 11.2 | 1.1h | 5.355 |
+| YOLOv9s | **0.1764** | 0.3111 | 0.4396 | 0.3479 | **7.1** | **0.9h** | 5.495 |
+| YOLOv10s | 0.1759 | **0.3121** | 0.4312 | **0.3512** | 7.2 | 1.1h | **1.363** |
+| YOLOv11s | 0.1760 | 0.3120 | 0.4495 | 0.3467 | 9.4 | 1.5h | 5.538 |
 
 While YOLOv9 technically holds a slight edge in overall accuracy, YOLOv10 leads in both inference speed and mAP@50 rankings. In practice, the differences in mAP@50, recall, and precision between these models are so marginal that their overall performance is virtually identical. The only truly tangible improvement comes from YOLOv10's heavily reduced inference latency. By employing an NMS-free architecture, YOLOv10 successfully eliminates post-processing delays without sacrificing accuracy, making it the recommended model for general deployment.
 However, specialized scenarios may call for different approaches. For example, YOLOv9 features the smallest model footprint and the fastest training time, making it the most efficient choice for resource-constrained environments.
