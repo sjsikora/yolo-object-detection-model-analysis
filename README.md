@@ -2,13 +2,13 @@
 
 ## Goal
 
-The goal of this project is to analyze the You Only Look Once (YOLO) model family provided by Ultralytics on an object detection task. This repo first trains a baseline, Yolov11 model, benchmarks five different iterations on that model, resulting in a single improved model, then analyzes different Yolo versions (8,9,10). For training time sake, the Yolov11 small size (9m parameters) was used.
+The goal of this project is to analyze the You Only Look Once (YOLO) model family provided by Ultralytics on an object detection task. This repo first trains a baseline, Yolov11 model, benchmarks different iterations, and analyzes different Yolo versions (8,9,10). For training time sake, the Yolov11 small size (9m parameters) was used.
 
 ## Dataset
 
 The dataset that was used in this project was the VisDrone dataset provided by the AISKYEYE team at the Lab of Machine Learning and Data Mining, Tianjin University, China. VisDrone is a collection of bound box annotated drone captured images and videos across urban and rural China.
 
-This dataset is widely used in the field of computer vision as it is a rigorously annotated, large and diverse dataset that contains many different data types (static images, videos, single and multi object tracking). This repo focuses on task 1 on the dataset, or object detection in images which contains 6,471 training, 548 validation, 1,610 test images.
+This dataset is widely used in the field of computer vision as it is a rigorously annotated, large and diverse dataset that contains many different data types (static images, videos, single and multi object tracking). This repo focuses on task 1 on the dataset, or object detection in images, which contains 6,471 training, 548 validation, 1,610 test images.
 
 ## Training Environment
 
@@ -32,16 +32,16 @@ The baseline Yolov11 was trained on VisDrone data. Default parameters were used 
 Overall, the baseline model exhibited healthy training curves. The training and validation losses are decreased across all 50 epochs. Notably though, after epoch 40, a mild divergence between training and validation in box, class, and DFL loss was observed. This divergence coincided with the removal of mosaic augmentation at epoch 40. With less diverse training data, the model was able to begin memorising specific features of the training images, causing training loss to fall faster than validation loss.
 
 However this did not negatively impact detection performance, as mAP@50 continued to improve through to epoch 48. This suggests that the model, despite the loss divergence, still retained strong task generalization.
-Convergence Behavior
+
+### Convergence Behavior
+
 This model did not fully converge at 50 epochs. While, as discussed above, there was divergence in training and validation losses, they both were still declining. Also, the metrics of mAP, precision, and recall were still fluctuating and had not settled on a stable value. However, this model was close to convergence. The rate of improvement had slowed dramatically and the model was deciding on its final values before convergence. Convergence could be squeezed out with around 20–30 more epochs, but the payback would be extremely low.
 
 ### Overfitting/Underfitting
 
-The model did not truly overfit as the training loss never declined while the validation loss increased. While there was an increasing gap between the two, the validation loss still decreased. While the mAP@50 continued to improve. This showcased the model ability to still seek improvements on new data.
+Strict overfitting was not observed, as validation loss did not trend upward even as the gap between the two curves widened. Performance gains continued to manifest despite the divergence, suggesting the model was still learning useful features. 
 
-However, there are indicators of underfitting on this task. The final validation mAP of 0.4040 and a mAP@50-95 of 0.2402, this suggest that the model still missed more than half of the objects in images, and struggled to find them precisely. There are two leading theories on this. First, to identify small objects in noisy images is hard. The VisDrone dataset only contains 6,401 images to train the model to fine tune a model for this purpose. In the machine learning field, more data is better, and to train a state of the art model for this task, we may expect to see over 200,000 images used for training. Another possibility is that the model may not have the capacity to learn the complex relationships needed for this task.
-
-In all, the baseline model achieved a final testing mAP@50 of 0.3122 and mAP@50-95 of 0.1767.
+While strict overfitting was not observed during training, the drop from a validation mAP@50 of 0.4040 to a test mAP@50 of 0.3112, a relative decline of 23%, suggests the model did not fully generalise to unseen data. While some drop in performance is expected, the decline was substantial. The model may have overfit to the training and validation data, or the validation set may not have been a representative sample of the problem domain. Two factors likely constrained the model's ability to learn more robust representations. First, the VisDrone training set contains only 6,401 images, which is modest for a fine-grained detection task of this complexity, state-of-the-art models would expect to train on datasets of over  200,000 images. With limited data diversity, the model had fewer opportunities to learn features that transfer reliably to new images. Second, the small YOLO model variant has a small parameter count, which may cap its capacity to capture the complex spatial relationships required for detecting small objects in cluttered aerial scenes. Together, these constraints suggest that validation performance may have overstated the model's true generalisation ability.
 
 ## Experiments
 
@@ -69,13 +69,13 @@ The rationale with this experiment is that the automatically chosen learning rat
 
 Despite the higher learning rate, the model trailed the baseline loss. throughout all of the training. At epoch 10, the baseline had already reached a validation mAP50 of 0.341 while the experiment sat at 0.293. This gap persisted through to epoch 50, where the baseline finished at 0.403 versus 0.381. Rather than converging faster or finding a better minimum, the higher learning rate actually appeared to slow and destabilize early learning.
 
-The experiment produced a test mAP50-95 of 0.1806 versus the baseline's 0.1767, marginal gain of 0.0039. This improvement is too small to be notable, and falls within noise (further testing will support the idea that the optimizer may consistently lead to small increases). This experiment suggests that the default learning rate was appropriate for this task, and increasing it provided no meaningful benefit.
+The experiment produced a test mAP50-95 of 0.1800 versus the baseline's 0.1760, marginal gain of 0.0040. This improvement is too small to be notable, and falls within noise (although further testing will support the idea that the optimizer may consistently lead to small increases). This experiment suggests that the default learning rate was appropriate for this task, and increasing it provided no meaningful benefit.
 
 ### Data Augmentation
 
 #### Experiment Settings
 
-Data augmentation is the practice of altering the training data in hopes that the model learns a deeper understanding of the problem rather than memorizing unimportant features. The baseline model already uses the mosaic data augmentation, but this experiment also includes mixup and copy-paste augmentation.
+Data augmentation is the practice of altering the training data in hopes that the model learns a deeper understanding of the problem rather than memorizing unimportant features. The baseline model already uses the mosaic data augmentation, but this experiment also included the mixup and copy-paste augmentation.
 
 Mixup blends two images together with a weighted average, encouraging the model to produce softer, more generalized predictions. Copy-paste augmentation randomly copies objects from one image and pastes them into another, increasing the variety of object arrangements and densities the model is exposed to. Given that VisDrone contains densely packed small objects from aerial viewpoints, copy-paste in particular was expected to help by artificially increasing the frequency of crowded scenes during training.
 
@@ -93,9 +93,9 @@ Mixup blends two images together with a weighted average, encouraging the model 
 
 #### Analysis
 
-The data augmentation experiment produced a final mAP50-95 of 0.1803 compared to the baseline's 0.1767. A negligible difference that falls within noise. Despite the added mixup and copy-paste augmentation, the model showed no meaningful improvement in detection performance.
+The data augmentation experiment produced a final mAP50-95 of 0.1797 compared to the baseline's 0.1760. A negligible difference that falls within noise. Despite the added mixup and copy-paste augmentation, the model showed no meaningful improvement in detection performance. This suggests that for the VisDrone dataset at imgsz=640, augmentation did not help the model generalize better. A likely explanation is that at 640 resolution, the small aerial objects are already so compressed that further manipulation of the images introduces noise rather than useful variation. The model already has little detail to work with, regardless of how the images are blended or rearranged.
 
-This suggests that for the VisDrone dataset at imgsz=640, augmentation did not help the model generalize better. A likely explanation is that at 640 resolution, the small aerial objects are already so compressed that further manipulation of the images introduces noise rather than useful variation. The model already has little detail to work with, regardless of how the images are blended or rearranged, which is the major factor in the loss.
+Interestingly the data augmentation experiment produced a notable divergence between validation and test performance. The validation-to-test gap narrowed from 26.5% to 18.2% (a consistent reduction that persisted when the same augmentation was later applied at 1280 resolution). This indicates the model was less able to exploit the specific characteristics of the 548 validation images as expected signature of successful regularization. The augmented model learned representations of the data that generalized better to unseen data, at the cost of a lower ceiling on the validation set.
 
 ### Increase Image Size
 
@@ -117,7 +117,7 @@ This experiment only changed the image resolution from 640x640 to 1280x1280. The
 
 #### Analysis
 
-This experiment was the most impactful by far. The model achieved a test mAP@50-95 of 0.2608 and mAP@50 of 0.4396, compared to the baseline's 0.1767 and 0.3122 respectively; there was about a  ~48% improvement in mAP50-95.
+This experiment was the most impactful by far. The model achieved a test mAP@50-95 of 0.2593 and mAP@50 of 0.4389, compared to the baseline's 0.1760 and 0.3120 respectively; there was about a ~48% improvement in mAP50-95.
 
 This confirms that this model was simply limited by resolution on this task. The other hyper parameter solutions were trying to tune a fundamentally limited task, but the image resolution was the biggest step forward. This makes intuitive sense as well, just like us, a model will simply have an easier time detecting objects with a higher quality image.
 
