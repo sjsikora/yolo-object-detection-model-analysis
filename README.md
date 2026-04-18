@@ -1,5 +1,43 @@
 # Yolo Model Analysis
 
+## Reproducing Results
+
+### Dataset Setup
+
+Download the VisDrone 2019 Object Detection dataset from the [official VisDrone repository](https://github.com/VisDrone/VisDrone-Dataset). You need the three splits:
+
+- `VisDrone2019-DET-train`
+- `VisDrone2019-DET-val`
+- `VisDrone2019-DET-test-dev`
+
+### Training
+
+All training is driven by YAML config files in [training/](training/). Open [training/yolo_train.ipynb](training/yolo_train.ipynb) in Colab or Jupyter and set `ARGS_YAML_PATH` to the config for the run you want to reproduce. Update `TRAIN_DIR_RAW`, `VAL_DIR_RAW`, `TEST_DIR_RAW`, and `DST_DIR` to match your local or Drive paths. The notebook will convert the VisDrone annotations to YOLO format, train the model, and save results.
+
+| Run | Config |
+|---|---|
+| Baseline | [training/baseline.yaml](training/baseline.yaml) |
+| AdamW lr=0.001 | [training/experiment/adamw_lr0_001.yaml](training/experiment/adamw_lr0_001.yaml) |
+| Data Augmentation | [training/experiment/data_augmentation.yaml](training/experiment/data_augmentation.yaml) |
+| High Resolution (1280) | [training/experiment/imgsize_high.yaml](training/experiment/imgsize_high.yaml) |
+| AdamW lr=0.001 + High Res | [training/improvement_cycle/adamw_lr0_001_imghigh.yaml](training/improvement_cycle/adamw_lr0_001_imghigh.yaml) |
+| Data Aug + High Res | [training/improvement_cycle/data_aug_imghigh.yaml](training/improvement_cycle/data_aug_imghigh.yaml) |
+| More Epochs (75) | [training/improvement_cycle/imgsize_high_more_epochs.yaml](training/improvement_cycle/imgsize_high_more_epochs.yaml) |
+| Cosine LR + High Res | [training/improvement_cycle/cosine_lr_imghigh.yaml](training/improvement_cycle/cosine_lr_imghigh.yaml) |
+| YOLOv8s | [training/verisoned/yolov8.yaml](training/verisoned/yolov8.yaml) |
+| YOLOv9s | [training/verisoned/yolov9.yaml](training/verisoned/yolov9.yaml) |
+| YOLOv10s | [training/verisoned/yolov10.yaml](training/verisoned/yolov10.yaml) |
+
+### Analysis
+
+After training, run the analysis notebooks in [analyze/](analyze/) to reproduce plots and rankings:
+
+- [analyze/plot_training_curves.ipynb](analyze/plot_training_curves.ipynb): training and validation loss curves
+- [analyze/evaluate_models.ipynb](analyze/evaluate_models.ipynb): test set evaluation and rankings
+- [analyze/compare_baseline_versioned.ipynb](analyze/compare_baseline_versioned.ipynb): versioned model comparison
+
+--
+
 ## Goal
 
 The goal of this project is to analyze the You Only Look Once (YOLO) model family provided by Ultralytics on an object detection task. This repo first trains a baseline, Yolov11 model, benchmarks different iterations, and analyzes different Yolo versions (8,9,10). For training time's sake, the Yolov11 small size (9m parameters) was used.
@@ -13,6 +51,10 @@ This dataset is widely used in the field of computer vision as it is a rigorousl
 ## Training Environment
 
 All models were trained on an A100 GPU within Google Colab.
+
+## Usage Instructions
+
+
 
 ## Baseline Model
 
@@ -35,11 +77,11 @@ However, this did not negatively impact detection performance, as mAP@50 continu
 
 ### Convergence Behavior
 
-This model did not fully converge at 50 epochs. While, as discussed above, there was divergence in training and validation losses, they both were still declining. Also, the metrics of mAP, precision, and recall were still fluctuating and had not settled on a stable value. However, this model was close to convergence. The rate of improvement had slowed dramatically, and the model was deciding on its final values before convergence. Convergence could be squeezed out with around 20–30 more epochs, but the payback would be extremely low.
+This model did not fully converge at 50 epochs. While, as discussed above, there was divergence in training and validation losses, they both were still declining. Also, the metrics of mAP, precision, and recall were still fluctuating and had not settled on a stable value. However, this model was close to convergence. The rate of improvement had slowed dramatically, and the model was deciding on its final values before convergence. Convergence could be squeezed out with around 20-30 more epochs, but the payback would be extremely low.
 
 ### Overfitting/Underfitting
 
-Strict overfitting was not observed, as validation loss did not trend upward even as the gap between the two curves widened. Performance gains continued to manifest despite the divergence, suggesting the model was still learning useful features. 
+Strict overfitting was not observed, as validation loss did not trend upward even as the gap between the two curves widened. Performance gains continued to manifest despite the divergence, suggesting the model was still learning useful features.
 
 While strict overfitting was not observed during training, the drop from a validation mAP@50 of 0.4040 to a test mAP@50 of 0.3112, a relative decline of 23%, suggests the model did not fully generalize to unseen data. While some drop in performance is expected, the decline was substantial. The model may have overfit to the training and validation data, or the validation set may not have been a representative sample of the problem domain. Two factors likely constrained the model's ability to learn more robust representations. First, the VisDrone training set contains only 6,401 images, which is modest for a fine-grained detection task of this complexity; state-of-the-art models would expect to train on datasets of over  200,000 images. With limited data diversity, the model had fewer opportunities to learn features that transfer reliably to new images. Second, the small YOLO model variant has a small parameter count, which may limit its capacity to capture the complex spatial relationships required for detecting small objects in cluttered aerial scenes. Together, these constraints suggest that validation performance may have overstated the model's true generalization ability.
 
